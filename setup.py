@@ -8,7 +8,7 @@ setup(
         author='Mario Oberli',
         author_email='mario.oberli@obsec.ch',
         license='Apache License 2.0',
-        packages=['napalm_huawei_usg'],
+        packages=['napalm_huawei_usg','napalm_huawei_usg.utils'],
         install_requires=['napalm>=3.0.0',
             ],
 
