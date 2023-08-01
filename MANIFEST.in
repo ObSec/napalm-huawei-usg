@@ -1,0 +1,3 @@
+include requirements.txt
+include napalm_huawei_usg/templates/*.j2
+include napalm_huawei_usg/utils/textfsm_templates/*.tpl
