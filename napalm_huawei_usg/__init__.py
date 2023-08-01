@@ -15,6 +15,6 @@
 """napalm-skeleton package."""
 from napalm_huawei_usg.huawei_usg import USGDriver
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = 'Mario Oberli'
 __all__ = ('USGDriver',)

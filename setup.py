@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
         name='napalm_huawei_usg',
-        version='0.0.2',
+        version='0.0.3',
         description='NAPALM Community Driver for Huawei USG Firewalls.',
         url='https://github.com/ObSec/napalm-huawei-usg',
         author='Mario Oberli',

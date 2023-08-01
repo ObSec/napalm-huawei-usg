@@ -274,7 +274,7 @@ class USGDriver(NetworkDriver):
                 }
             },
             "fans": {
-                "FAN1": {
+                "fan1": {
                     "status": true
                 }
             },
@@ -388,8 +388,8 @@ class USGDriver(NetworkDriver):
         environment.setdefault('cpu', {})
         cpu_use = re.search(r'Management-plane CPU Usage:\s+(?P<cpu_mgmt>\d+\.\d+%)\s+Data-plane CPU Usage :\s+(?P<cpu_data>\d+\.\d+%)', cpu_cmd)
         environment['cpu'] = {
-            "0": {
-                "usage": cpu_use.group(2)
+            "cpu0": {
+                "%usage": cpu_use.group(2)
             }
 
         }
@@ -409,7 +409,7 @@ class USGDriver(NetworkDriver):
 
         Returns the running configuration as dictionary.
         The candidate and startup are always empty string for now,
-        since CE does not support candidate configuration.
+        since USG does not support candidate configuration.
         """
         config = {
             'startup': '',
@@ -426,7 +426,7 @@ class USGDriver(NetworkDriver):
             pass
         return config
 
-    # ok
+    # USG has no candidate configuration yet
     def load_merge_candidate(self, filename=None, config=None):
         """Open the candidate config and merge."""
         if not filename and not config:
@@ -442,7 +442,7 @@ class USGDriver(NetworkDriver):
         self.replace = False
         self.loaded = True
 
-    # developing
+    # USG has no candidate configuration yet
     def load_replace_candidate(self, filename=None, config=None):
         """Open the candidate config and replace."""
         if not filename and not config:
@@ -452,7 +452,7 @@ class USGDriver(NetworkDriver):
         self.replace = True
         self.loaded = True
 
-    # ok
+    # USG has no candidate configuration yet
     def commit_config(self, message=""):
         """Commit configuration."""
         if self.loaded:
@@ -475,7 +475,7 @@ class USGDriver(NetworkDriver):
         else:
             raise CommitError('No config loaded.')
 
-    # ok
+    # USG has no candidate configuration yet
     def compare_config(self):
         """Compare candidate config with running."""
         if self.loaded:
@@ -823,50 +823,52 @@ class USGDriver(NetworkDriver):
             })
         return interfaces
 
-    # verified
+    # development
     def get_lldp_neighbors(self):
         """
-        Return LLDP neighbors brief info.
+        Return LLDP neighbors list info.
 
-        Sample input:
-            <device-usg>dis lldp neighbor brief
-            Local Intf    Neighbor Dev          Neighbor Intf             Exptime(s)
-            XGE0/0/1      huawei-S5720-01       XGE0/0/1                  96
-            XGE0/0/3      huawei-S5720-POE      XGE0/0/1                  119
-            XGE0/0/46     Aruba-7210-M          GE0/0/2                   95
+        Sample input
+            <device-usg>display lldp neighbor list
+            SysName         LocalInterface             ChassisId         PortId
+            leaf-111..      XGigabitEthernet0/0/1      18fd-74d6-8241    bridge/sfp28-12
+            leaf-112..      XGigabitEthernet0/0/0      48a9-8a11-2be5    bridge/sfp28-11
+            oobmgmt-sw-01.. MEth0/0/0                  488f-5a01-2c1f    bridge/ether41
 
         Sample output:
         {
-            'XGE0/0/1': [
+            'XGigabitEthernet0/0/1': [
                 {
-                    'hostname': 'huawei-S5720-01',
-                    'port': 'XGE0/0/1'
+                    'hostname': 'leaf-111',
+                    'port': 'bridge/sfp28-12'
                 },
-            'XGE0/0/3': [
+            ],
+            'XGigabitEthernet0/0/0': [
                 {
-                    'hostname': 'huawei-S5720-POE',
-                    'port': 'XGE0/0/1'
+                    'hostname': 'leaf-112',
+                    'port': 'bridge/sfp28-11'
                 },
-            'XGE0/0/46': [
+            ],
+            'MEth0/0/0': [
                 {
-                    'hostname': 'Aruba-7210-M',
-                    'port': 'GE0/0/2'
+                    'hostname': 'oobmgmt-sw-01',
+                    'port': 'bridge/ether41'
                 },
-            ]
+            ],
         }
         """
         results = {}
-        command = 'display lldp neighbor brief'
+        command = 'display lldp neighbor list'
         output = self.device.send_command(command)
-        re_lldp = r"(?P<local>\S+)\s+(?P<hostname>\S+)\s+(?P<port>\S+)\s+\d+\s+"
+        re_lldp = r"(?P<hostname>\S+)\s+(?P<local>\S+)\s+\S+\s+(?P<port>\S+)"
         match = re.findall(re_lldp, output, re.M)
         for neighbor in match:
-            local_intf = neighbor[0]
+            local_intf = neighbor[1]
             if local_intf not in results:
                 results[local_intf] = []
 
             neighbor_dict = dict()
-            neighbor_dict['hostname'] = neighbor[1]
+            neighbor_dict['hostname'] = neighbor[0]
             neighbor_dict['port'] = neighbor[2]
             results[local_intf].append(neighbor_dict)
         return results
